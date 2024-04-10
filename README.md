@@ -9,52 +9,51 @@ This is our little Mars rover from the lecture:
 
 
 
-# Mars Rover Environment
+# Mars Rover Environment with Gymnasium
 
-The Mars Rover Environment is a simple, custom environment designed for reinforcement learning experiments. It simulates a rover navigating a linear track on Mars, where the objective is to reach a specific target location. The environment is structured to provide a straightforward yet challenging scenario for reinforcement learning algorithms to navigate, with rewards assigned based on the rover's ability to reach the designated goal.
+The Mars Rover Environment is a reinforcement learning scenario implemented with Gymnasium. This environment simulates a rover navigating across a linear Martian landscape, aiming to reach a designated goal. It's designed to provide a simple yet challenging task for reinforcement learning algorithms, focusing on probabilistic state transitions and reward optimization.
 
-## Environment Structure
+## Environment Overview
 
-The environment is represented as a linear space with a defined number of states, including two terminal states at both ends. The rover can occupy any state in this linear space, moving left or right based on the actions taken. The actions have probabilistic outcomes, introducing uncertainty into the rover's movement and making the navigation task more complex.
+In this simulated Martian landscape, the rover faces a series of states it can navigate through by moving left or right. The environment is discrete, with terminal states at both ends of the linear space. The rover's goal is to reach the most rewarding terminal state, overcoming the uncertainty introduced by probabilistic movement outcomes.
 
 ### States
 
-- The environment consists of `n_states + 2` discrete states, where `n_states` is the configurable size of the environment, excluding the terminal states.
-- The two additional states represent the terminal states at the left and right ends of the environment.
+- The environment is composed of `n_states + 2` states, where `n_states` is the number of non-terminal states. The two additional states represent the terminal points at either end of the rover's path.
+- The rover's position within these states determines its progress and influences the rewards it accumulates.
 
 ### Actions
 
-The rover can perform two actions:
-- **Left (0)**: Attempt to move one state to the left.
-- **Right (1)**: Attempt to move one state to the right.
+The rover can perform two actions, each intended to move it one step in the desired direction:
+- **Left (0)**: Move one state to the left.
+- **Right (1)**: Move one state to the right.
 
-The actual movement of the rover is subject to a probabilistic model, where there is a chance the rover may stay in place or move in the opposite direction of the intended action.
+The actual outcome of an action is subject to probabilities, adding an element of unpredictability to the rover's movement.
 
 ### Transition Probabilities
 
-The outcome of each action is determined by the following probabilities:
-- **p_stay**: The probability that the rover stays in the same state after an action.
+The movement outcomes are influenced by the following probabilities:
+- **p_stay**: The probability that the rover remains in its current state, despite taking an action.
 - **p_backward**: The probability that the rover moves in the opposite direction of the intended action.
-- The probability of moving in the intended direction is calculated as `1 - p_stay - p_backward`.
+- The probability of moving forward, as intended, is `1 - p_stay - p_backward`, ensuring all probabilities sum to 1.
 
 ### Rewards
 
-Rewards are assigned based on the rover's movement and its ability to reach the terminal states:
-- **left_side_reward**: The reward received for reaching the left terminal state.
-- **right_side_reward**: A higher reward received for reaching the right terminal state. The goal is to encourage the rover to navigate towards the right side of the environment.
+- **left_side_reward**: Reward received upon reaching the left terminal state.
+- **right_side_reward**: Higher reward for reaching the right terminal state, incentivizing the rover to navigate towards this goal.
 
 ### Terminal States
 
-The environment includes two terminal states at both ends. Reaching either terminal state concludes an episode, with the rover receiving a corresponding reward based on the terminal state reached.
+Reaching a terminal state concludes the current episode. These states represent the rover's successful navigation to an endpoint of its journey, with rewards allocated based on the terminal state reached.
 
-## Usage
+## Integration with Gymnasium
 
-This environment is designed to be compatible with OpenAI Gym, allowing it to be easily integrated into existing reinforcement learning workflows. Users can instantiate the environment, reset it to start a new episode, and interact with it by sending actions and receiving observations, rewards, and done signals in return.
+This environment is compatible with the Gymnasium library, facilitating its use in reinforcement learning projects. Gymnasium provides a standardized API for interacting with the environment, including initiating episodes, taking actions, and receiving feedback in the form of state observations, rewards, and termination signals.
 
 ## Customization
 
-The environment allows for customization of its size (`n_states`), transition probabilities (`p_stay`, `p_backward`), and rewards (`left_side_reward`, `right_side_reward`). This flexibility makes it suitable for a wide range of experiments, from teaching basic concepts of reinforcement learning to testing different algorithms and strategies.
+The Mars Rover Environment supports several customization options, allowing users to adjust the number of states (`n_states`), the probabilities of action outcomes (`p_stay`, `p_backward`), and the rewards for reaching terminal states (`left_side_reward`, `right_side_reward`). This flexibility makes it suitable for various experimentation needs, from introductory reinforcement learning tasks to more complex strategic explorations.
 
-## Implementation Note
+## Usage Note
 
-To use this environment, ensure you have OpenAI Gym installed and properly configured in your Python environment. The Mars Rover Environment extends the `DiscreteEnv` class from Gym's `toy_text` module, leveraging its discrete state and action space functionality.
+To utilize this environment, ensure you have the Gymnasium library installed in your Python environment (`pip install gymnasium`). The environment inherits from Gymnasium's `DiscreteEnv`, using its mechanisms for discrete state and action spaces, probabilistic transitions, and reward definitions.
