@@ -1,6 +1,26 @@
 import numpy as np
 import numpy as np
 
+'''
+This script defines a framework for simulating a simplified Mars Rover navigation task as a reinforcement learning environment, leveraging the Gymnasium API. It includes the implementation of a discrete environment class, a specific Mars Rover environment, and a wrapper to convert the Mars Rover environment from a Markov Decision Process (MDP) to a Markov Reward Process (MRP) by applying a fixed policy.
+
+**Key Components of the Script:**
+
+- **`categorical_sample` Function**: Utilizes probabilities to stochastically select an index, simulating the randomness in action outcomes.
+- **`DiscreteEnv` Class**: Serves as a base class for discrete action and state space environments, encapsulating common functionalities like resetting the environment and stepping through actions.
+- **`MarsRoverEnv` Class**: Extends `DiscreteEnv` to model a Mars Rover navigation scenario with specific dynamics, where the rover moves on a linear track with probabilistic movement outcomes and rewards based on position.
+- **`MarsRoverMRPWrapper` Class**: Transforms the Mars Rover MDP into an MRP by enforcing a fixed policy, thus simplifying decision-making to observe state and reward dynamics under specific behaviors.
+- **Simulation**: The script demonstrates how to use the environment with a predefined policy that always chooses to move the rover right. It simulates the environment's behavior over a specified number of steps, collects states across episodes, and visualizes the rover's progression over time on a plot.
+
+**Functional Overview:**
+
+1. **Environment Setup**: Defines a custom Mars Rover environment where the rover has to navigate a linear track with probabilistic outcomes for its actions (move left, move right, stay).
+2. **Policy Enforcement**: Introduces a wrapper that applies a fixed policy to the environment, effectively converting the problem from an MDP, where actions are chosen based on a policy learned or specified by the agent, to an MRP, where outcomes are solely determined by the state transitions and rewards under the given policy.
+3. **Visualization**: Simulates the environment under the fixed policy for a number of steps, tracking the state transitions across multiple episodes. It then plots these transitions, showing the rover's state over time and marking the beginning of new episodes, to illustrate the rover's journey and the effects of the applied policy.
+
+**Educational Value**: This script is an educational tool for understanding the basics of reinforcement learning, specifically the concepts of MDPs, MRPs, and policy application in a controlled environment. It showcases how to model an environment, apply a fixed policy, and analyze the resulting state and reward dynamics through visualization.
+'''
+
 import numpy as np
 import gymnasium as gym
 from gymnasium.utils import seeding
@@ -118,20 +138,69 @@ class MarsRoverEnv(DiscreteEnv):
         pass
 
 
+class MarsRoverMRPWrapper:
+    """
+    A wrapper to convert MarsRoverEnv MDP into an MRP by applying a fixed policy.
+
+    Attributes:
+        env (MarsRoverEnv): The environment to wrap.
+        policy (dict): A dictionary mapping from state indices to action indices,
+                       defining the fixed policy to apply.
+    """
+
+    def __init__(self, env, policy):
+        """
+        Initializes the wrapper with the environment and the policy.
+
+        Args:
+            env (MarsRoverEnv): The Mars Rover environment instance.
+            policy (dict): The fixed policy, mapping from state to action.
+        """
+        self.env = env
+        self.policy = policy
+
+    def reset(self):
+        """Resets the environment to its initial state."""
+        return self.env.reset()
+
+    def step(self):
+        """
+        Takes a step in the environment using the action defined by the fixed policy for the current state.
+
+        Returns:
+            A tuple of (next_state, reward, done, info), where 'info' contains the probability of the transition.
+        """
+        current_state = self.env.s
+        action = self.policy[current_state]  # Get action from policy
+        return self.env.step(action)
+
+    # Optionally, implement any other methods from MarsRoverEnv you need, forwarding calls to self.env.
+
+
+
 if __name__ == '__main__':
-    env = MarsRoverEnv()
+    # Initialize the original environment
+    original_env = MarsRoverEnv()
+
+    # Define a simple policy: always move right
+    # Note: Adjust the range according to your environment's number of states
+    policy = {state: MarsRoverEnv.RIGHT for state in range(original_env.nS)}
+
+    # Wrap the environment with the defined policy
+    MRP = MarsRoverMRPWrapper(original_env, policy)
+
     episodes = []  # List to hold lists of states for each episode
     current_episode_states = []  # Temporarily hold states for the current episode
-    number_of_steps_with_environement = 1000
+    number_of_steps_with_environement = 100
     for _ in range(number_of_steps_with_environement):
-        action = env.action_space.sample()  # Random action
-        state, _, done, _ = env.step(action)
+        action = MRP.env.action_space.sample()  # Random action
+        state, _, done, _ = MRP.step()
         current_episode_states.append(state)
 
         if done:
             episodes.append(current_episode_states)  # Add the completed episode
             current_episode_states = []  # Reset for next episode
-            env.reset()
+            MRP.reset()
 
     if current_episode_states:  # Make sure to add the states of the last episode if not empty
         episodes.append(current_episode_states)
@@ -152,7 +221,7 @@ if __name__ == '__main__':
     plt.xlabel('Step')
     plt.ylabel('State')
     # Adjust the y-axis to start from 1 by shifting labels
-    y_ticks = np.arange(0, env.nS)  # Original 0-based state indices
+    y_ticks = np.arange(0, MRP.env.nS)  # Original 0-based state indices
     y_labels = y_ticks + 1  # Shift labels to start from 1
     plt.yticks(y_ticks, y_labels)
     plt.grid(True)
