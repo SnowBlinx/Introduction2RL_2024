@@ -49,5 +49,3 @@ for episode in range(number_episodes):
         next_state, reward, done, info = env.step(action)
         state = next_state
         env.render()
-
-        
